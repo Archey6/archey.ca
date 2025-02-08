@@ -116,7 +116,51 @@ var map = L.map('map', {center: [-68, -90],zoomControl:false , zoom: 3, layers: 
 				document.getElementById("gmico"+id).value = type;
 			}
 
+			markerState = 1;
+			function onMarkerClick(e) {
+				console.log('clicked');
+				
+				
+				id = e.target.options.markerId.toString();
+				console.log(id);
+				cssId = '.marker-text-'+id;
+				console.log(cssId);
+				markerState = markerState === 0 ? 1 : 0;
+				
+				let textElement = document.querySelector('.marker-text-'+id);
+
+				if (textElement) {
+					// Modify CSS properties dynamically
+					textElement.style.opacity = markerState;
+				} else {
+					console.warn("No element with class '.text-below-marker' found!");
+				}
+			}			
+			
+			function markerStyle(){
+				
+			}
+			
+			markerIncrement = 0;
 			function DropMarker(){
+			
+				elementId = `marker-text-${markerIncrement}`;
+			
+				/*let textElement = document.createElement('div');
+				textElement.className = 'text-below-marker';
+				textElement.id = elementId; // Unique ID
+				//textElement.innerText = `Marker ${marketIncrement}`;
+				textElement.style.position = 'absolute';
+				textElement.style.left = '0px';
+				textElement.style.top = '-50px';
+				textElement.style.minWidth = '100px';
+				textElement.style.textAlign = 'center';
+				textElement.style.minHeight = '1.2em';
+				textElement.style.border = '1px dotted black';
+				textElement.style.backgroundColor = 'white';*/
+			
+				console.log(`marker-text-${markerIncrement}`);
+			
 				var we = document.getElementById("we").value;
 				var r1 = document.getElementById('r1').value;
 				var m1 = document.getElementById('m1').value;
@@ -126,6 +170,17 @@ var map = L.map('map', {center: [-68, -90],zoomControl:false , zoom: 3, layers: 
 				var m2 = document.getElementById('m2').value;
 				var s2 = document.getElementById('s2').value;
 				
+				//console.log(typeof we);
+				
+				let d1 = we == -1 ? 'W' : we == 1 ? 'E' : 'Invalid';
+				let d2 = ns == -1 ? 'N' : ns == 1 ? 'S' : 'Invalid';
+				
+				//var coords = [d1, r1, m1, s1, d2, r2, m2, s2];
+				var coords1 = d1 + ' ' + r1 + '°' + m1 + '\'' + s1 + '\"';
+				var coords2 = d2 + ' ' + r2 + '°' + m2 + '\'' + s2 + '\"';
+				
+				//console.log(coords1);
+				//console.log(coords2);
 				
 				var WESecond = r1*3600+m1*60+s1*1;
 				var WEPxl = WESecond/7.7253*we;
@@ -135,8 +190,31 @@ var map = L.map('map', {center: [-68, -90],zoomControl:false , zoom: 3, layers: 
 		
 				var m = {x:10337+WEPxl, y:19973+NSPxl}
 		
-				var marker = L.marker(map.unproject([m.x, m.y], map.getMaxZoom())).addTo(map);
-				map.panTo(marker.getLatLng());		
+				console.log(elementId);
+				var marker = L.marker(map.unproject([m.x, m.y], map.getMaxZoom()), { markerId:  markerIncrement}).addTo(map);
+				marker.on('click', onMarkerClick);
+				map.panTo(marker.getLatLng());
+				var text_marker = L.marker(map.unproject([m.x, m.y], map.getMaxZoom()), {
+					icon: L.divIcon({
+						html: coords1 + '  ' + coords2,
+						className: elementId,
+					})
+				}, { labelId:  markerIncrement}).addTo(map);
+					
+				console.log(text_marker.options.icon.options);
+				textElement = document.getElementsByClassName('leaflet-marker-icon '+elementId+' leaflet-zoom-animated leaflet-clickable')[0];
+					
+				console.log(textElement);
+				//textElement.style.position = 'absolute';
+				textElement.style.left = '0px';
+				textElement.style.top = '-50px';
+				textElement.style.minWidth = '100px';
+				textElement.style.textAlign = 'center';
+				textElement.style.minHeight = '1.2em';
+				textElement.style.border = '1px dotted black';
+				textElement.style.backgroundColor = 'white';
+					
+				markerIncrement++;		
 			}
 
 			function delMarker(id){
