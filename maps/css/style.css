@@ -218,3 +218,12 @@ background: url('../images/search_btn.png') no-repeat;
 .googleBanner{
 position: absolute;z-index: 1;right: 0px;bottom: 0px;padding: 0px;width: 300px;height: 250px;
 }
+/*.text-below-marker {
+  min-width: 100px;
+  left: 0px;
+  top: -50px;
+  text-align: center;
+  min-height: 1.2em;
+  border: 1px dotted black;
+  background-color: white;
+}*/

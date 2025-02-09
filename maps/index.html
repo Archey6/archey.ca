@@ -41,8 +41,16 @@
 		<div class="results" id="results" name="results"></div>
 		<div class="editor" id="editor" name="editor"></div>
 
-					<div id="logo" style="position:fixed; left:0px; top:5px; width:220px; height:114px; z-index:20;"><a href="http://forum.instant-gaming.fr/" target=_new><img src="./images/instant.png" width="256" height="256" border="0"></a></div>
-					<div id="custom menu" style="position: absolute;z-index: 30;right: 0px;top: 0px;background: url('./images/paper.png');background-repeat: no-repeat;padding: 25px 11px;width: 240px;height: 387px;"></div>
+					<!--<div id="logo" style="position:fixed; left:0px; top:5px; width:220px; height:114px; z-index:20;"><a href="http://forum.instant-gaming.fr/" target=_new><img src="./images/instant.png" width="256" height="256" border="0"></a></div>-->
+					
+					<div id="custom menu" style="position: absolute;z-index: 30;right: 0px;top: 0px;background: url('./images/paper.png');background-repeat: no-repeat;padding: 25px 11px;width: 240px;height: 387px;">
+					<select id="iconSelector" style="margin-top: 150px;">
+							<option value="rare">Rare Marker</option>
+							<option value="arcane">Arcane Marker</option>
+							<option value="heroic">Heroic Marker</option>
+						</select>
+					</div>
+
 					<div id="DrawBtn" class="DrawBtn" onClick="CheckEdit()" style="position:fixed; left:10px; top:160px;"><div class="block" style="margin: 6px 0px 0px 6px;" title="Нанести метки на карту"><img src="./images/icons/edit_ico.png" width="24" height="24" border="0"></div><div class="block mapButtonLetter">&nbsp; M</div></div>
 					<div id="map"></div>
 
@@ -83,7 +91,7 @@
 	};
 
 var cmAttr = '&copy База знаний Archeage.org.ua', cmUrl = './images/maps/{z}/{x}/{y}.jpg'; var minimal   = L.tileLayer(cmUrl, {attribution:'<a href="http://aadb.info/doc/" target=_new>руководство</a>',minZoom:1,maxZoom:7,noWrap:true,tms: true});
-var map = L.map('map', {center: [-68, -90],zoomControl:false , zoom: 3, layers: [minimal]});
+var map = L.map('map', {closePopupOnClick: false, center: [-68, -90],zoomControl:false , zoom: 3, layers: [minimal]});
 	UserCoord.addTo(map);
 		
 </script>
@@ -116,7 +124,38 @@ var map = L.map('map', {center: [-68, -90],zoomControl:false , zoom: 3, layers: 
 				document.getElementById("gmico"+id).value = type;
 			}
 
-			markerState = 1;
+
+			var rareIcon = L.icon({
+				iconUrl: 'js/images/marker-icon.png',
+				shadowUrl:'js/images/marker-shadow.png',
+				iconSize: [25, 40],
+				iconAnchor: [13, 40],
+				popupAnchor: [0, -40]
+			});
+			
+			var arcaneIcon = L.icon({
+				iconUrl: 'js/images/marker-icon2.png',
+				shadowUrl:'js/images/marker-shadow.png',
+				iconSize: [25, 40],
+				iconAnchor: [13, 40],
+				popupAnchor: [0, -40]
+			});
+			
+			var heroicIcon = L.icon({
+				iconUrl: 'js/images/marker-icon3.png',
+				shadowUrl:'js/images/marker-shadow.png',
+				iconSize: [25, 40],
+				iconAnchor: [13, 40],
+				popupAnchor: [0, -40]
+			});
+			var selectedIcon = rareIcon;
+			document.getElementById("iconSelector").addEventListener("change", function () {
+					selectedIcon = this.value === "arcane" ? arcaneIcon : 
+								   this.value === "heroic" ? heroicIcon : rareIcon;
+					console.log("changed");
+					console.log(selectedIcon.options.iconUrl);
+				});
+			/*markerState = 1;
 			function onMarkerClick(e) {
 				console.log('clicked');
 				
@@ -135,8 +174,10 @@ var map = L.map('map', {center: [-68, -90],zoomControl:false , zoom: 3, layers: 
 				} else {
 					console.warn("No element with class '.text-below-marker' found!");
 				}
-			}			
-			
+			}			*/
+			function onRightClick(e) {
+				map.removeLayer(e.target);
+			}
 			function markerStyle(){
 				
 			}
@@ -161,6 +202,8 @@ var map = L.map('map', {center: [-68, -90],zoomControl:false , zoom: 3, layers: 
 			
 				console.log(`marker-text-${markerIncrement}`);
 			
+				
+				
 				var we = document.getElementById("we").value;
 				var r1 = document.getElementById('r1').value;
 				var m1 = document.getElementById('m1').value;
@@ -191,30 +234,38 @@ var map = L.map('map', {center: [-68, -90],zoomControl:false , zoom: 3, layers: 
 				var m = {x:10337+WEPxl, y:19973+NSPxl}
 		
 				console.log(elementId);
-				var marker = L.marker(map.unproject([m.x, m.y], map.getMaxZoom()), { markerId:  markerIncrement}).addTo(map);
-				marker.on('click', onMarkerClick);
+				var popup = L.popup({closeOnClick: false, autoClose: false}).setContent(coords1 + '<br\>' + coords2);
+				var marker = L.marker(map.unproject([m.x, m.y], map.getMaxZoom()), { icon: selectedIcon }).addTo(map).bindPopup(popup);
+				
+				//marker.bindPopup(coords1 + '<br/>' + coords2, {autoClose: false, closeOnClick: false});
+				setTimeout(() => {
+					marker.openPopup();
+				}, 100);
+				marker.on('contextmenu', onRightClick);
 				map.panTo(marker.getLatLng());
-				var text_marker = L.marker(map.unproject([m.x, m.y], map.getMaxZoom()), {
+				/*var text_marker = L.marker(map.unproject([m.x, m.y], map.getMaxZoom()), {
 					icon: L.divIcon({
-						html: coords1 + '  ' + coords2,
+						html: coords1 + ' <br/>' + coords2,
 						className: elementId,
 					})
-				}, { labelId:  markerIncrement}).addTo(map);
+				}, { labelId:  markerIncrement}).addTo(map);*/
 					
-				console.log(text_marker.options.icon.options);
+				/*console.log(text_marker.options.icon.options);
 				textElement = document.getElementsByClassName('leaflet-marker-icon '+elementId+' leaflet-zoom-animated leaflet-clickable')[0];
 					
 				console.log(textElement);
 				//textElement.style.position = 'absolute';
-				textElement.style.left = '0px';
-				textElement.style.top = '-50px';
-				textElement.style.minWidth = '100px';
+				textElement.style.left = '10px';
+				textElement.style.top = '-65px';
+				textElement.style.minWidth = '75px';
 				textElement.style.textAlign = 'center';
 				textElement.style.minHeight = '1.2em';
 				textElement.style.border = '1px dotted black';
 				textElement.style.backgroundColor = 'white';
+				textElement.style.height = '38px';
 					
-				markerIncrement++;		
+				markerIncrement++;	*/	
+				//console.log(marker.options.icon.options.iconUrl);
 			}
 
 			function delMarker(id){
@@ -439,9 +490,12 @@ function key_check() {
 	}
 }
 
-	map.on('click', onClick);
+	//map.on('click', onClick);
 	document.onkeydown=key_check;
-
+		L.Popup.options = {
+		autoClose: false,
+		closeButon: false
+     };
 		</script>
 		
 			</BODY>

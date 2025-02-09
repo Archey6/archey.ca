@@ -241,3 +241,10 @@
 .leaflet-edit-resize {
 	cursor: pointer;
 }
+.text-below-marker {
+  min-width: 100px;
+  left: -50px;
+  text-align: center;
+  min-height: 1.2em;
+  border: 1px solid red;
+}
