@@ -171,6 +171,28 @@ display:inline-block;
 	cursor: pointer;
 }
 
+.undo_btn{
+	font-family: 'Marck Script';
+	text-align: center;
+	font-size: 18px;
+	width: 192px;
+	height: 28px;
+	background: url('../images/search_btn.png') no-repeat;
+	background-size: cover;
+	cursor: pointer;
+	display: flex !important; /* Enable flexbox */
+    align-items: center; /* Vertically center */
+    justify-content: center; /* Horizontally center */
+}
+
+.iconSelector{
+	font-family: 'Marck Script';
+	background: url('../images/search_btn.png') no-repeat;
+	background-color: white;
+	text-align: center;
+	font-size: 18px;
+}
+
 .txtfld_editor_imgurl{
 padding-right: 10px;
 padding-left: 10px;
