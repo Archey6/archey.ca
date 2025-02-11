@@ -44,12 +44,14 @@
 
 					<!--<div id="logo" style="position:fixed; left:0px; top:5px; width:220px; height:114px; z-index:20;"><a href="http://forum.instant-gaming.fr/" target=_new><img src="./images/instant.png" width="256" height="256" border="0"></a></div>-->
 					
-					<div id="custom menu" style="position: absolute;z-index: 30;right: 0px;top: 0px;background: url('./images/paper.png');background-repeat: no-repeat;padding: 25px 11px;width: 240px;height: 387px;">
+					<div id="custom menu" style="position: absolute;z-index: 30;right: 0px;top: 0px;background: url('./images/paper.png');background-repeat: no-repeat;padding: 25px 11px;width: 240px;height: 550px;">
 						<select id="iconSelector" class="iconSelector"style="margin-top: 150px;">
 							<option value="rare">Rare Marker</option>
 							<option value="arcane">Arcane Marker</option>
 							<option value="heroic">Heroic Marker</option>
 						</select>
+						
+						
 					</div>
 
 					<!-- <div id="DrawBtn" class="DrawBtn" onClick="CheckEdit()" style="position:fixed; left:10px; top:160px;"><div class="block" style="margin: 6px 0px 0px 6px;" title="Нанести метки на карту"><img src="./images/icons/edit_ico.png" width="24" height="24" border="0"></div><div class="block mapButtonLetter">&nbsp; M</div></div> -->
@@ -70,12 +72,19 @@
 		var pvplayer = new L.LayerGroup();
 				
 	var UserCoord = L.control();	
+	var BatchCoord = L.control();	
 	var Line = L.control();
 	var Empty = L.control();
 
 	UserCoord.onAdd = function (map) {
 		this._div = L.DomUtil.create('div', 'UserCoord');
-		this._div.innerHTML = '<div style="padding-top: 25px;text-align: left; width: 230px;font-family: Marck Script; font-size: 25px;"><select name="we" id="we" class="coords-slct"><option id="1" value="-1">W</option><option id="2" value="1">E</option></select> <input type="text" name="r1" id="r1" maxlength="2" value="0" class="coords-inpt" onclick="this.select();">° <input type="text" name="m1" id="m1" maxlength="2" value="0" class="coords-inpt" onclick="this.select();">&rsquo; <input type="text" name="s1" id="s1" maxlength="2" value="0" class="coords-inpt" onclick="this.select();">&quot; <br><select name="ns" id="ns" class="coords-slct"><option value="1">S</option><option value="-1">N</option></select> <input type="text" name="r2" id="r2" maxlength="2" value="0" class="coords-inpt" onclick="this.select();">° <input type="text" name="m2" id="m2" maxlength="2" value="0" class="coords-inpt" onclick="this.select();">&rsquo; <input type="text" name="s2" id="s2" maxlength="2" value="0" class="coords-inpt" onclick="this.select();">&quot;<div id="create" class="crtmrk_btn" onClick="DropMarker()">Place Marker</div><div id="undo" class="undo_btn" onClick="undoLastRemoval()">Undo</div></div>'
+		this._div.innerHTML = '<div style="padding-top: 25px;text-align: left; width: 230px;font-family: Marck Script; font-size: 25px;"><select name="we" id="we" class="coords-slct"><option id="1" value="-1">W</option><option id="2" value="1">E</option></select> <input type="text" name="r1" id="r1" maxlength="2" value="0" class="coords-inpt" onclick="this.select();">° <input type="text" name="m1" id="m1" maxlength="2" value="0" class="coords-inpt" onclick="this.select();">&rsquo; <input type="text" name="s1" id="s1" maxlength="2" value="0" class="coords-inpt" onclick="this.select();">&quot; <br><select name="ns" id="ns" class="coords-slct"><option value="1">S</option><option value="-1">N</option></select> <input type="text" name="r2" id="r2" maxlength="2" value="0" class="coords-inpt" onclick="this.select();">° <input type="text" name="m2" id="m2" maxlength="2" value="0" class="coords-inpt" onclick="this.select();">&rsquo; <input type="text" name="s2" id="s2" maxlength="2" value="0" class="coords-inpt" onclick="this.select();">&quot;<div id="create" class="crtmrk_btn" onClick="DropMarker(this.id)">Place Marker</div><div id="undo" class="undo_btn" onClick="undoLastRemoval()">Undo</div></div>'
+		return this._div;
+	};
+	
+	BatchCoord.onAdd = function (map) {
+		this._div = L.DomUtil.create('div', 'BatchCoord');
+		this._div.innerHTML = '<textarea id="batchCoords" class="batchCoords" style="margin-top: 35px; height: 250px; width: 200px; margin-left: -10px;" spellcheck="false">Batch Add Format:&#013;W aa,bb,cc S xx,yy,zz</textarea><div style="padding-top: 25px;text-align: left; width: 230px;font-family: Marck Script; font-size: 25px;"><div id="batchCreate" class="crtmrk_btn_batch" onClick="BatchDropMarker(this.id)">Batch Place Markers</div></div>'
 		return this._div;
 	};
 	
@@ -94,6 +103,7 @@
 var cmAttr = '&copy База знаний Archeage.org.ua', cmUrl = './images/maps/{z}/{x}/{y}.jpg'; var minimal   = L.tileLayer(cmUrl, {attribution:'<a href="http://aadb.info/doc/" target=_new>руководство</a>',minZoom:1,maxZoom:7,noWrap:true,tms: true});
 var map = L.map('map', {closePopupOnClick: false, center: [-68, -90],zoomControl:false , zoom: 3, layers: [minimal]});
 	UserCoord.addTo(map);
+	BatchCoord.addTo(map);
 		
 </script>
 		
@@ -193,25 +203,9 @@ var map = L.map('map', {closePopupOnClick: false, center: [-68, -90],zoomControl
 			}
 			
 			markerIncrement = 0;
-			function DropMarker(){
-			
-				elementId = `marker-text-${markerIncrement}`;
-			
-				/*let textElement = document.createElement('div');
-				textElement.className = 'text-below-marker';
-				textElement.id = elementId; // Unique ID
-				//textElement.innerText = `Marker ${marketIncrement}`;
-				textElement.style.position = 'absolute';
-				textElement.style.left = '0px';
-				textElement.style.top = '-50px';
-				textElement.style.minWidth = '100px';
-				textElement.style.textAlign = 'center';
-				textElement.style.minHeight = '1.2em';
-				textElement.style.border = '1px dotted black';
-				textElement.style.backgroundColor = 'white';*/
-			
-				console.log(`marker-text-${markerIncrement}`);
-			
+			function DropMarker(buttonId){
+				console.log(buttonId);
+
 				
 				
 				var we = document.getElementById("we").value;
@@ -223,17 +217,19 @@ var map = L.map('map', {closePopupOnClick: false, center: [-68, -90],zoomControl
 				var m2 = document.getElementById('m2').value;
 				var s2 = document.getElementById('s2').value;
 				
-				//console.log(typeof we);
+		
 				
 				let d1 = we == -1 ? 'W' : we == 1 ? 'E' : 'Invalid';
 				let d2 = ns == -1 ? 'N' : ns == 1 ? 'S' : 'Invalid';
 				
-				//var coords = [d1, r1, m1, s1, d2, r2, m2, s2];
+				console.log(we);
+				console.log(ns);
+				
+				
 				var coords1 = d1 + ' ' + r1 + '°' + m1 + '\'' + s1 + '\"';
 				var coords2 = d2 + ' ' + r2 + '°' + m2 + '\'' + s2 + '\"';
 				
-				//console.log(coords1);
-				//console.log(coords2);
+
 				
 				var WESecond = r1*3600+m1*60+s1*1;
 				var WEPxl = WESecond/7.7253*we;
@@ -243,39 +239,75 @@ var map = L.map('map', {closePopupOnClick: false, center: [-68, -90],zoomControl
 		
 				var m = {x:10337+WEPxl, y:19973+NSPxl}
 		
-				console.log(elementId);
 				var popup = L.popup({closeOnClick: false, autoClose: false}).setContent(coords1 + '<br\>' + coords2);
 				var marker = L.marker(map.unproject([m.x, m.y], map.getMaxZoom()), { icon: selectedIcon }).addTo(map).bindPopup(popup);
 				
-				//marker.bindPopup(coords1 + '<br/>' + coords2, {autoClose: false, closeOnClick: false});
+
 				setTimeout(() => {
 					marker.openPopup();
 				}, 100);
 				marker.on('contextmenu', onRightClick);
 				map.panTo(marker.getLatLng());
-				/*var text_marker = L.marker(map.unproject([m.x, m.y], map.getMaxZoom()), {
-					icon: L.divIcon({
-						html: coords1 + ' <br/>' + coords2,
-						className: elementId,
-					})
-				}, { labelId:  markerIncrement}).addTo(map);*/
+
+			}
+			
+			function BatchDropMarker(buttonId){
+				var batchCoordsArray = document.getElementById('batchCoords').value.split('\n');
+				console.log(batchCoordsArray);
+				const coordRegex = /^([WEwe])[ ,]+(\d+)[ ,]+(\d+)[ ,]+(\d+)[ ,]+([NSns])[ ,]+(\d+)[ ,]+(\d+)[ ,]+(\d+)\s*$/i;
+
+				
+				batchCoordsArray.forEach(batchCoordsV => {
+					//console.log(batchCoordsV);
+					/* d1 and d2 and we and ns are swapped relative to the single marker function because the input is an int there and string here  */
+					const result = batchCoordsV.match(coordRegex);
+					//console.log(result);
+					if (result == null){
+						alert('Malformed Coordinates: ' + batchCoordsV);
+						throw new Error('x');
+					}
+					var [, d1, r1, m1, s1, d2, r2, m2, s2] = result;
+
+					r1 = parseInt(r1);
+					m1 = parseInt(m1);
+					s1 = parseInt(s1);
+
+					r2 = parseInt(r2);
+					m2 = parseInt(m2);
+					s2 = parseInt(s2);
 					
-				/*console.log(text_marker.options.icon.options);
-				textElement = document.getElementsByClassName('leaflet-marker-icon '+elementId+' leaflet-zoom-animated leaflet-clickable')[0];
+					d1 = d1.toUpperCase();
+					d2 = d2.toUpperCase();
 					
-				console.log(textElement);
-				//textElement.style.position = 'absolute';
-				textElement.style.left = '10px';
-				textElement.style.top = '-65px';
-				textElement.style.minWidth = '75px';
-				textElement.style.textAlign = 'center';
-				textElement.style.minHeight = '1.2em';
-				textElement.style.border = '1px dotted black';
-				textElement.style.backgroundColor = 'white';
-				textElement.style.height = '38px';
+					//console.log(d1 === 'W');
+					let we = d1 == 'W' ? -1 : d1 == 'E' ? 1 : 'Invalid';
+					let ns = d2 == 'N' ? -1 : d2 == 'S' ? 1 : 'Invalid';
 					
-				markerIncrement++;	*/	
-				//console.log(marker.options.icon.options.iconUrl);
+					//console.log(we);
+					//console.log(ns);
+					
+					var coords1 = d1 + ' ' + r1 + '°' + m1 + '\'' + s1 + '\"';
+					var coords2 = d2 + ' ' + r2 + '°' + m2 + '\'' + s2 + '\"';
+					
+
+					
+					var WESecond = r1*3600+m1*60+s1*1;
+					var WEPxl = WESecond/7.7253*we;
+
+					var NSSecond = r2*3600+m2*60+s2*1;
+					var NSPxl = NSSecond/7.7922*ns;
+			
+					var m = {x:10337+WEPxl, y:19973+NSPxl}
+			
+					var popup = L.popup({closeOnClick: false, autoClose: false}).setContent(coords1 + '<br\>' + coords2);
+					var marker = L.marker(map.unproject([m.x, m.y], map.getMaxZoom()), { icon: selectedIcon }).addTo(map).bindPopup(popup);
+					
+
+					setTimeout(() => {
+						marker.openPopup();
+					}, 100);
+					marker.on('contextmenu', onRightClick);
+				});
 			}
 
 			function delMarker(id){
